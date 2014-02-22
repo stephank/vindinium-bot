@@ -122,5 +122,12 @@ TileProto.neighbours = function(maxDepth) {
     return res;
 };
 
+TileProto.isNear = function(t, maxDepth) {
+    return this.neighbours(maxDepth).some(function(tile) {
+        if (tile.chr[0] === t[0])
+            return !t[1] || tile.chr[1] === t[1];
+    });
+};
+
 
 module.exports = Board;

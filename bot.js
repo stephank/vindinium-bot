@@ -73,6 +73,32 @@ function run(s, cb) {
         cb(null);
 }
 
+// Heuristic cost calculation during pathing.
+function tileCost(s, a, b) {
+    // Check for a nearby danger from enemies.
+    var badMojo = false;
+    if (!a.isNear('[]')) {
+        var hero = s.hero;
+        s.game.heroes.forEach(function(douche) {
+            if (douche === s.hero) return;
+            var dist = douche.tile.dist(a);
+
+            // Keep a safe distance from healthier douches.
+            if (dist <= 2 && douche.life > hero.life)
+                badMojo = true;
+
+            // Never fight an enemy next to a tavern.
+            else if (dist === 1 && douche.tile.isNear('[]'))
+                badMojo = true;
+        });
+    }
+
+    // Avoid tile, or give it a cost according to goal distance.
+    var cost = a.dist(b);
+    if (badMojo) cost += 1000;
+    return cost;
+}
+
 // Do a bunch of augmentations on game state.
 function augment(s) {
     var board = s.game.board = new Board(s.game.board);
