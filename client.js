@@ -79,22 +79,20 @@ function cli(bot, log) {
         };
     }
 
-    var argv = process.argv;
     var mode, numGames, cfgFile;
-    if (argv[2] === '-a') {
-        if (argv.length !== 5) usage();
+    var argv = require('optimist').argv;
+
+    if (argv._.length !== 1) usage();
+    if (Boolean(argv.a) === Boolean(argv.t)) usage();
+
+    cfgFile = argv._[0];
+    if (argv.a) {
         mode = 'arena';
-        numGames = parseInt(argv[3], 10);
-        cfgFile = argv[4];
+        numGames = argv.a;
     }
-    else if (argv[2] === '-t') {
-        if (argv.length !== 5) usage();
+    else if (argv.t) {
         mode = 'training';
-        numGames = parseInt(argv[3], 10);
-        cfgFile = argv[4];
-    }
-    else {
-        usage();
+        numGames = argv.t;
     }
 
     var config;
