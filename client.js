@@ -1,13 +1,7 @@
 var fs = require('fs');
 var request = require('request');
 
-function gameRequest(url, key, dir, cb) {
-    var form = { key: key };
-    if (typeof(dir) === 'function')
-        cb = dir;
-    else
-        form.dir = dir;
-
+function gameRequest(url, form, cb) {
     request.post({ url: url, form: form }, function(err, res, body) {
         if (err)
             return cb(err);
@@ -40,7 +34,9 @@ function start(config, cb) {
         console.log('Connected and waiting for other players to join...');
     }
 
-    gameRequest(serverUrl + '/api/' + mode, key, function(err, state) {
+    gameRequest(serverUrl + '/api/' + mode, {
+        key: key
+    }, function(err, state) {
         if (err) cb(err); else loop(state);
     });
 
@@ -50,7 +46,10 @@ function start(config, cb) {
 
         var url = state.playUrl;
         bot(state, function(dir) {
-            gameRequest(state.playUrl, key, dir, function(err, state) {
+            gameRequest(state.playUrl, {
+                key: key,
+                dir: dir
+            }, function(err, state) {
                 if (err) cb(err); else loop(state);
             });
         });
