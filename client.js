@@ -20,6 +20,7 @@ function start(config, cb) {
     var key = config.key;
     var mode = config.mode;
     var log = config.log;
+    var context = config.context || {};
     var serverUrl = config.serverUrl || 'http://vindinium.org';
 
     if (typeof(bot) !== 'function')
@@ -41,6 +42,8 @@ function start(config, cb) {
     });
 
     function loop(state) {
+        state.context = context;
+
         if (log) log(state);
         if (state.game.finished) return cb(null, state);
 
