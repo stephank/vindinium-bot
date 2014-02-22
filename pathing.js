@@ -28,9 +28,8 @@ module.exports = function(s, a, b) {
             dir = DIRS[i];
 
             tile = best[dir]();
-            if (!tile || tile._closed ||
-                !(tile === b || tile.chr[0] === ' ' ||
-                                tile.chr[0] === '@')) continue;
+            if (!tile || tile._closed || !(tile === b || tile.chr[0] === ' '))
+                continue;
 
             g = best._g + 1;
             if (open.indexOf(tile) === -1)

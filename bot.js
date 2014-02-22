@@ -18,13 +18,15 @@ module.exports = function(s, cb) {
     }
 
     // How badly we want to heal.
-    if (hero.mineCount && hero.life <= 80) {
+    if (hero.life <= 80 && (hero.gold >= 2 || hero.mineCount)) {
         var tavern;
         board.taverns.forEach(function(tile) {
-            tile._dist = tile.dist(hero.tile);
-            if (!tavern || tile._dist < tavern._dist) tavern = tile;
+            var path = pathing(s, s.hero.tile, tile);
+            if (path) {
+                if (!tavern || tile._dist < tavern._dist) tavern = tile;
+            }
         });
-        goal('heal', tavern, (80 - hero.life) * 3);
+        goal('heal', tavern, 80 - hero.life);
     }
 
     if (hero.life > 20) {
@@ -33,25 +35,31 @@ module.exports = function(s, cb) {
             // If it's ours, never mind.
             if (tile.chr[1] === hero.idStr) return;
 
-            goal('mine', tile,
-                Math.max(10 - tile.spawnDist, 1) /
-                Math.max(hero.mineCount, 1) * 50);
+            var path = pathing(s, s.hero.tile, tile);
+            if (path) {
+                goal('mine', tile, Math.max(11 - path.length, 1) * 10);
+            }
         });
 
         // Look for kill opportunities.
         s.game.heroes.forEach(function(douche) {
             // Let's not stab ourselves.
             if (douche === hero) return;
+            // Don't bother unless we have something to gain.
+            if (douche.mineCount === 0) return;
             // If we'll lose, never mind.
             if (douche.life > hero.life) return;
 
-            var dist = douche.tile.dist(hero.tile);
-            goal('kill', douche.tile,
-                douche.mineCount * Math.max(5 - dist, 0) * 40);
+            var path = pathing(s, s.hero.tile, douche.tile);
+            if (path) {
+                goal('kill', douche.tile,
+                    Math.max(11 - path.length, 0) * 8);
+            }
         });
     }
 
     // Execute best goal.
+    s.context.goal = best;
     if (best) {
         var path = pathing(s, hero.tile, best.tile);
         cb(path[0]);
@@ -82,18 +90,6 @@ function augment(s) {
             return tile.chr[1] === douche.idStr;
         });
     });
-
-    if (!s.context.mineDist) {
-        s.context.mineDist = board.mines.map(function(tile) {
-            var path = pathing(s, s.hero.spawnTile, tile);
-            return (tile.spawnDist = path ? path.length : Infinity);
-        });
-    }
-    else {
-        s.context.mineDist.forEach(function(spawnDist, i) {
-            board.mines[i].spawnDist = spawnDist;
-        });
-    }
 }
 
 // Run CLI if main.
