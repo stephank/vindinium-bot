@@ -90,7 +90,7 @@ function augment(s) {
 
     if (!s.context.mineDist) {
         s.context.mineDist = board.mines.map(function(tile) {
-            var path = pathing(s, s.hero.tile, tile);
+            var path = pathing(s, s.hero.spawnTile, tile);
             return (tile.spawnDist = path ? path.length : Infinity);
         });
     }
