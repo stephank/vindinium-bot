@@ -38,7 +38,7 @@ module.exports = function(s, cb) {
         // Look for kill opportunities.
         s.game.heroes.forEach(function(douche) {
             // Let's not stab ourselves.
-            if (douche.id === hero.id) return;
+            if (douche === hero) return;
             // If we'll lose, never mind.
             if (douche.life > hero.life) return;
 
@@ -70,18 +70,21 @@ module.exports = function(s, cb) {
 function augment(s) {
     var board = s.game.board = new Board(s.game.board);
 
-    s.game.heroes.concat([s.hero]).forEach(function(hero) {
-        var idStr = String(hero.id);
-        hero.idStr = idStr;
+    s.game.heroes.forEach(function(douche) {
+        if (douche.id === s.hero.id)
+            s.hero = douche;
 
-        var pos = hero.pos;
-        hero.tile = board.get(pos.x, pos.y);
+        var idStr = String(douche.id);
+        douche.idStr = idStr;
 
-        var spawnPos = hero.spawnPos;
-        hero.spawnTile = board.get(spawnPos.x, spawnPos.y);
+        var pos = douche.pos;
+        douche.tile = board.get(pos.x, pos.y);
 
-        hero.mines = board.mines.filter(function(tile) {
-            return tile.chr[1] === hero.idStr;
+        var spawnPos = douche.spawnPos;
+        douche.spawnTile = board.get(spawnPos.x, spawnPos.y);
+
+        douche.mines = board.mines.filter(function(tile) {
+            return tile.chr[1] === douche.idStr;
         });
     });
 
