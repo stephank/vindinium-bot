@@ -73,7 +73,17 @@ function start(config, cb) {
     }
 }
 
-function cli(bot) {
+function cli(bot, log) {
+    if (!log) {
+        log = function(state) {
+            process.stdout.write('.');
+            if (state.game.finished) {
+                process.stdout.write('\n');
+                console.log('Finished %s/%s: %s', i + 1, numGames, state.viewUrl);
+            }
+        };
+    }
+
     var argv = process.argv;
     var mode, numGames, cfgFile;
     if (argv[2] === '-a') {
@@ -110,14 +120,6 @@ function cli(bot) {
         start(config, function(err, state) {
             if (++i < numGames) playGame();
         });
-    }
-
-    function log(state) {
-        process.stdout.write('.');
-        if (state.game.finished) {
-            process.stdout.write('\n');
-            console.log('Finished %s/%s: %s', i + 1, numGames, state.viewUrl);
-        }
     }
 
     function usage() {
