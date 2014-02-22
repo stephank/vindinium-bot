@@ -32,7 +32,7 @@ function run(s, cb) {
             hero.tile.neighbours().forEach(function(tile) {
                 var danger = tileDanger(s, tile);
                 if (danger)
-                    goal('dodge', tile, [tile.dir], 100 + danger);
+                    goal('dodge', tile, [tile.dir], 105 - danger);
             });
         }
     }
@@ -100,7 +100,7 @@ function tileDanger(s, tile) {
 
             // Never fight an enemy next to a tavern.
             else if (dist === 1 && douche.tile.isNear('[]'))
-                res = 4;
+                res = 5;
         });
     }
     return res;
