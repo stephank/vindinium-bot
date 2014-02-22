@@ -43,7 +43,8 @@ BoardProto.findOne = function(t) {
 
 BoardProto.findAll = function(t) {
     return this.tiles.filter(function(c) {
-        return c.chr === t;
+        if (c.chr[0] === t[0])
+            return t[1] && c.chr[1] === t[1];
     });
 };
 
