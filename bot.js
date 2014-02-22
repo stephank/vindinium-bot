@@ -40,7 +40,7 @@ function run(s, cb) {
     // How badly we want to heal.
     if (hero.life <= 80 && (hero.gold >= 2 || hero.mineCount)) {
         board.taverns.forEach(function(tile) {
-            var path = pathing(s, s.hero.tile, tile);
+            var path = pathing(s, s.hero.tile, tile, tileCost);
             if (path)
                 goal('heal', tile, path,
                     80 - hero.life - path.length);
@@ -53,7 +53,7 @@ function run(s, cb) {
             // If it's ours, never mind.
             if (tile.chr[1] === hero.idStr) return;
 
-            var path = pathing(s, s.hero.tile, tile);
+            var path = pathing(s, s.hero.tile, tile, tileCost);
             if (path) {
                 goal('mine', tile, path,
                     Math.max(11 - path.length, 1) * 4);
@@ -69,7 +69,7 @@ function run(s, cb) {
             // If we'll lose, never mind.
             if (douche.life > hero.life) return;
 
-            var path = pathing(s, s.hero.tile, douche.tile);
+            var path = pathing(s, s.hero.tile, douche.tile, tileCost);
             if (path) {
                 goal('kill', douche.tile, path,
                     Math.max(11 - path.length, 0) * 5);
