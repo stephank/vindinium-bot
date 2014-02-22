@@ -44,7 +44,7 @@ function run(s, cb) {
             var path = pathing(s, s.hero.tile, tile);
             if (path) {
                 goal('mine', tile, path,
-                    Math.max(11 - path.length, 1) * 10);
+                    Math.max(11 - path.length, 1) * 4);
             }
         });
 
@@ -53,14 +53,14 @@ function run(s, cb) {
             // Let's not stab ourselves.
             if (douche === hero) return;
             // Don't bother unless we have something to gain.
-            if (douche.mineCount === 0) return;
+            if (douche.mineCount < 2) return;
             // If we'll lose, never mind.
             if (douche.life > hero.life) return;
 
             var path = pathing(s, s.hero.tile, douche.tile);
             if (path) {
                 goal('kill', douche.tile, path,
-                    Math.max(11 - path.length, 0) * 8);
+                    Math.max(11 - path.length, 0) * 5);
             }
         });
     }
