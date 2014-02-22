@@ -10,18 +10,21 @@ module.exports = function(s, cb) {
 
     var hero = s.hero;
     var board = s.game.board;
-    var goals = [];
+
+    var best = null;
+    function goal(action, tile, score) {
+        if (best && best.score >= score) return;
+        best = { action: action, tile: tile, score: score };
+    }
 
     // How badly we want to heal.
-    var best = null;
     if (hero.mineCount && hero.life <= 80) {
+        var tavern;
         board.taverns.forEach(function(tile) {
             tile._dist = tile.dist(hero.tile);
-            if (!best || tile._dist < best._dist) best = tile;
+            if (!tavern || tile._dist < tavern._dist) tavern = tile;
         });
-        goals.push({ what: 'heal', where: best, score:
-            (80 - hero.life) * 3
-        });
+        goal('heal', tavern, (80 - hero.life) * 3);
     }
 
     if (hero.life > 20) {
@@ -30,9 +33,9 @@ module.exports = function(s, cb) {
             // If it's ours, never mind.
             if (tile.chr[1] === hero.idStr) return;
 
-            goals.push({ what: 'mine', where: tile, score:
-                Math.max(10 - tile.spawnDist, 1) / Math.max(hero.mineCount, 1) * 50
-            });
+            goal('mine', tile,
+                Math.max(10 - tile.spawnDist, 1) /
+                Math.max(hero.mineCount, 1) * 50);
         });
 
         // Look for kill opportunities.
@@ -43,22 +46,14 @@ module.exports = function(s, cb) {
             if (douche.life > hero.life) return;
 
             var dist = douche.tile.dist(hero.tile);
-            goals.push({ what: 'kill', where: douche.tile, score:
-                douche.mineCount * Math.max(5 - dist, 0) * 40
-            });
+            goal('kill', douche.tile,
+                douche.mineCount * Math.max(5 - dist, 0) * 40);
         });
     }
 
-    // Determine best goal.
-    best = null;
-    goals.forEach(function(goal) {
-        if (!best || goal.score > best.score) best = goal;
-    });
-    s.context.goal = best;
-
-    // Execute.
+    // Execute best goal.
     if (best) {
-        var path = pathing(s, hero.tile, best.where);
+        var path = pathing(s, hero.tile, best.tile);
         cb(path[0]);
     }
     else {
