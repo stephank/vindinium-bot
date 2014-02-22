@@ -1,6 +1,7 @@
 module.exports = function(s, a, b, fn) {
     var tiles, open, i, len, best, tile, neighbours;
 
+    if (a === b) return [];
     if (!fn) fn = defaultHeuristic;
 
     tiles = s.game.board.tiles;
