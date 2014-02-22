@@ -15,9 +15,7 @@ module.exports = function(s, a, b) {
         best = null;
         for (i = 0; i < len; i++) {
             tile = open[i];
-
-            if (!best) best = tile;
-            else if (tile._f < best._f) best = tile;
+            if (!best || tile._f < best._f) best = tile;
         }
 
         if (best === b)
