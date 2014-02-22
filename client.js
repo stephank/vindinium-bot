@@ -30,11 +30,6 @@ function start(config, cb) {
     if (mode !== 'arena' && mode !== 'training')
         throw new Error("mode must be set to arena or training");
 
-    var state;
-    if ('arena' === mode) {
-        console.log('Connected and waiting for other players to join...');
-    }
-
     gameRequest(serverUrl + '/api/' + mode, {
         key: key
     }, function(err, state) {
