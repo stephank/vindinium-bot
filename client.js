@@ -142,7 +142,7 @@ function cli(bot, log) {
     }
 
     function usage() {
-        console.error('Usage: %s [-a|-t] <#numGames> <config>', argv[1]);
+        console.error('Usage: %s [-a|-t] <numGames> <config>', process.argv[1]);
         process.exit(1);
     }
 
