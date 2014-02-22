@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-module.exports = function(curState, cb) {
+module.exports = function(s, cb) {
     var dirs = ['Stay', 'North', 'South', 'East', 'West'];
     cb(choose(dirs));
 };
