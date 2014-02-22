@@ -96,15 +96,21 @@ function cli(bot, log) {
         numGames = argv.t;
     }
 
-    var match = /^(\d+)x(\d+)$/.exec(numGames);
+    var match = /^(\d+)x(.+)$/.exec(numGames);
     if (match) {
         numChildren = parseInt(match[1], 10);
-        numGames = parseInt(match[2], 10);
+        numGames = match[2];
     }
     else {
         numChildren = 1;
-        if (!numGames || typeof(numGames) !== 'number') usage();
     }
+
+    if (numGames === 'INF')
+        numGames = Infinity;
+    else
+        numGames = parseInt(numGames, 10);
+    if (!numGames || numGames < 1)
+        usage();
 
     gameNo = 0;
 
