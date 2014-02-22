@@ -1,6 +1,5 @@
-var DIRS = ['n', 'e', 's', 'w'];
 module.exports = function(s, a, b, fn) {
-    var tiles, open, i, len, best, tile, dir;
+    var tiles, open, i, len, best, tile, neighbours;
 
     if (!fn) fn = defaultHeuristic;
 
@@ -26,11 +25,11 @@ module.exports = function(s, a, b, fn) {
         best._closed = true;
         open.splice(open.indexOf(best), 1);
 
-        for (i = 0; i < 4; i++) {
-            dir = DIRS[i];
-
-            tile = best[dir]();
-            if (!tile || tile._closed || !(tile === b || tile.chr[0] === ' '))
+        neighbours = best.neighbours();
+        len = neighbours.length;
+        for (i = 0; i < len; i++) {
+            tile = neighbours[i];
+            if (tile._closed || !(tile === b || tile.chr[0] === ' '))
                 continue;
 
             g = best._g + 1;
@@ -40,7 +39,7 @@ module.exports = function(s, a, b, fn) {
                 continue;
 
             tile._prev = best;
-            tile._dir = dir;
+            tile._dir = tile.dir;
             tile._g = g;
             tile._f = g + fn(s, tile, b);
         }
@@ -57,6 +56,6 @@ module.exports = function(s, a, b, fn) {
     }
 };
 
-function defaultHeuristic(s, tile, goal) {
-    return tile.dist(goal);
+function defaultHeuristic(s, a, b) {
+    return a.dist(b);
 }

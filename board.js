@@ -88,5 +88,39 @@ TileProto.dist = function(other) {
     return Math.abs(other.x - this.x) + Math.abs(other.y - this.y);
 };
 
+var DIRS = ['n', 'e', 's', 'w'];
+TileProto.neighbours = function(maxDepth) {
+    var self = this;
+    if (!maxDepth) maxDepth = 1;
+
+    var indices = {};
+    walk(this, 1);
+    function walk(tile, depth) {
+        for (var i = 0; i < 4; i++) {
+            var dir = DIRS[i];
+
+            var neighbour = tile[dir]();
+            if (neighbour && neighbour !== self) {
+                var idx = neighbour.idx;
+                if (!indices[idx]) {
+                    indices[idx] = true;
+
+                    if (depth === 1)
+                        neighbour.dir = dir;
+
+                    if (depth !== maxDepth)
+                        walk(neighbour, depth + 1);
+                }
+            }
+        }
+    }
+
+    var tiles = this.board.tiles;
+    var res = [];
+    for (var idx in indices)
+        res.push(tiles[idx]);
+    return res;
+};
+
 
 module.exports = Board;
