@@ -30,6 +30,7 @@ function run(s, cb) {
         var danger = tileDanger(s, hero.tile);
         if (danger) {
             hero.tile.neighbours().forEach(function(tile) {
+                if (tile.chr !== '  ') return;
                 var danger = tileDanger(s, tile);
                 if (danger)
                     goal('dodge', tile, [tile.dir], 105 - danger);
