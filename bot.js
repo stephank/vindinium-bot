@@ -144,7 +144,7 @@ if (require.main === module) {
 
             if (goal)
                 str += printf('Goal: %4s, (%2d,%2d) %4d #',
-                    goal.what, goal.where.x, goal.where.y, goal.score);
+                    goal.action, goal.tile.x, goal.tile.y, goal.score);
             else
                 str += 'Goal: idle';
         }
