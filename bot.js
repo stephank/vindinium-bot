@@ -9,6 +9,5 @@ function choose(dirs) {
     return dirs[Math.floor(Math.random() * dirs.length)];
 }
 
-if (require.main === module) {
+if (require.main === module)
     require('./client').cli(module.exports);
-}
