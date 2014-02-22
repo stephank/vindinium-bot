@@ -134,6 +134,8 @@ function cli(bot, log) {
 
     function playGame() {
         start(config, function(err, state) {
+            if (err)
+                fatal("Request error", err);
             if (++gameNo < numGames)
                 playGame();
             else if (cluster.worker)
