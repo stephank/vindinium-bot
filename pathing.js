@@ -30,7 +30,7 @@ module.exports = function(s, a, b, fn) {
         len = neighbours.length;
         for (i = 0; i < len; i++) {
             tile = neighbours[i];
-            if (tile._closed || !(tile === b || tile.chr[0] === ' '))
+            if (tile._closed || !(tile === b || tile.chr === '  '))
                 continue;
 
             g = best._g + 1;
