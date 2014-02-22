@@ -25,6 +25,18 @@ function run(s, cb) {
         best = { action: action, tile: tile, path: path, score: score };
     }
 
+    // Avoid deadly douches when there's mines at stake.
+    if (hero.mineCount) {
+        var danger = tileDanger(s, hero.tile);
+        if (danger) {
+            hero.tile.neighbours().forEach(function(tile) {
+                var danger = tileDanger(s, tile);
+                if (danger)
+                    goal('dodge', tile, [tile.dir], 100 + danger);
+            });
+        }
+    }
+
     // How badly we want to heal.
     if (hero.life <= 80 && (hero.gold >= 2 || hero.mineCount)) {
         board.taverns.forEach(function(tile) {
@@ -73,28 +85,31 @@ function run(s, cb) {
         cb(null);
 }
 
-// Heuristic cost calculation during pathing.
-function tileCost(s, a, b) {
-    // Check for a nearby danger from enemies.
-    var badMojo = 0;
-    if (!a.isNear('[]')) {
+// Check for a nearby danger from enemies.
+function tileDanger(s, tile) {
+    var res = 0;
+    if (!tile.isNear('[]')) {
         var hero = s.hero;
         s.game.heroes.forEach(function(douche) {
             if (douche === s.hero) return;
-            var dist = douche.tile.dist(a);
+            var dist = douche.tile.dist(tile);
 
             // Keep a safe distance from healthier douches.
-            if (dist <= 3 && douche.life > hero.life)
-                badMojo = 4 - dist;
+            if (dist < 4 && douche.life > hero.life)
+                res = 4 - dist;
 
             // Never fight an enemy next to a tavern.
             else if (dist === 1 && douche.tile.isNear('[]'))
-                badMojo = 4;
+                res = 4;
         });
     }
+    return res;
+}
 
-    // Avoid tile, or give it a cost according to goal distance.
-    return a.dist(b) + badMojo * 1000;
+// Heuristic cost calculation during pathing.
+// Avoid dangerous tiles, and get the closest to the goal.
+function tileCost(s, a, b) {
+    return a.dist(b) + tileDanger(s, a) * 1000;
 }
 
 // Do a bunch of augmentations on game state.
@@ -167,10 +182,10 @@ if (require.main === module) {
                 turn, hero.life, hero.gold, hero.pos.x, hero.pos.y);
 
             if (goal)
-                str += printf('Goal: %4s, (%2d,%2d) %4d #',
+                str += printf('Goal: %5s, (%2d,%2d) %4d #',
                     goal.action, goal.tile.x, goal.tile.y, goal.score);
             else
-                str += 'Goal: idle                ';
+                str += 'Goal: idle                 ';
 
             str += printf(' - %4d ms', s.context.ms);
         }
