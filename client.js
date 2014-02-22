@@ -10,7 +10,7 @@ function start(serverUrl, key, mode, numTurns, bot, cb) {
             console.log("ERROR starting game:", err);
             return cb();
         }
-        console.log('Playing at:', state['viewUrl']);
+        console.log('Playing at:', state.viewUrl);
 
         loop(key, state, bot, cb);
     });
@@ -49,7 +49,7 @@ function loop(key, state, bot, cb) {
         cb();
     } else {
         process.stdout.write('.');
-        var url = state['playUrl'];
+        var url = state.playUrl;
         bot(state, function(dir) {
             state = move(url, key, dir, function(err, newState) {
                 if (err) {
@@ -65,7 +65,7 @@ function loop(key, state, bot, cb) {
 
 function isFinished(state) {
     return state && !! state.game &&
-        true === state['game']['finished'];
+        true === state.game.finished;
 }
 
 function move(url, key, direction, cb) {
