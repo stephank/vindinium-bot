@@ -20,21 +20,19 @@ function run(s, cb) {
     var board = s.game.board;
 
     var best = null;
-    function goal(action, tile, score) {
+    function goal(action, tile, path, score) {
         if (best && best.score >= score) return;
-        best = { action: action, tile: tile, score: score };
+        best = { action: action, tile: tile, path: path, score: score };
     }
 
     // How badly we want to heal.
     if (hero.life <= 80 && (hero.gold >= 2 || hero.mineCount)) {
-        var tavern;
         board.taverns.forEach(function(tile) {
             var path = pathing(s, s.hero.tile, tile);
-            if (path) {
-                if (!tavern || tile._dist < tavern._dist) tavern = tile;
-            }
+            if (path)
+                goal('heal', tile, path,
+                    80 - hero.life - path.length);
         });
-        goal('heal', tavern, 80 - hero.life);
     }
 
     if (hero.life > 20) {
@@ -45,7 +43,8 @@ function run(s, cb) {
 
             var path = pathing(s, s.hero.tile, tile);
             if (path) {
-                goal('mine', tile, Math.max(11 - path.length, 1) * 10);
+                goal('mine', tile, path,
+                    Math.max(11 - path.length, 1) * 10);
             }
         });
 
@@ -60,7 +59,7 @@ function run(s, cb) {
 
             var path = pathing(s, s.hero.tile, douche.tile);
             if (path) {
-                goal('kill', douche.tile,
+                goal('kill', douche.tile, path,
                     Math.max(11 - path.length, 0) * 8);
             }
         });
@@ -68,13 +67,10 @@ function run(s, cb) {
 
     // Execute best goal.
     s.context.goal = best;
-    if (best) {
-        var path = pathing(s, hero.tile, best.tile);
-        cb(path[0]);
-    }
-    else {
+    if (best)
+        cb(best.path[0]);
+    else
         cb(null);
-    }
 }
 
 // Do a bunch of augmentations on game state.
