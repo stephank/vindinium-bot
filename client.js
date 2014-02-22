@@ -100,7 +100,7 @@ function cli(bot) {
         process.stdout.write('.');
         if (state.game.finished) {
             process.stdout.write('\n');
-            console.log('Game Finished: %s/%s', i + 1, numGames);
+            console.log('Finished %s/%s: %s', i + 1, numGames, state.viewUrl);
         }
     }
 
