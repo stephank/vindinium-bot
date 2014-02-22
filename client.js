@@ -1,8 +1,4 @@
-#!/usr/bin/env node
-
 var request = require('request');
-
-var randomBot = require('./bot');
 
 function start(serverUrl, key, mode, numTurns, bot, cb) {
   var state;
@@ -97,37 +93,44 @@ function usage() {
   console.log('Example: client.js mySecretKey training 20');
 }
 
-var argv = process.argv;
-if (6 < argv.length) {
-  usage();
-  process.exit(1);
+function cli(bot) {
+  var argv = process.argv;
+  if (6 < argv.length) {
+    usage();
+    process.exit(1);
+  }
+  var key = argv[2];
+  var mode = argv[3];
+
+  var numberOfGames = parseInt(argv[4], 10);
+  var numberOfTurns = 300; // Ignored in arena mode
+
+  if ('training' === mode) {
+    numberOfGames = 1;
+    numberOfTurns = parseInt(argv[4], 10);
+  }
+
+  var serverUrl = 'http://vindinium.org';
+  if (6 === argv.length) {
+    serverUrl = argv[5];
+  }
+
+  var i = 0;
+
+  function playGame() {
+    start(serverUrl, key, mode, numberOfTurns, bot, function() {
+      console.log('Game Finished:', i + 1, '/', numberOfGames);
+      i++;
+      if (i < numberOfGames) {
+        playGame();
+      }
+    });
+  }
+
+  playGame();
 }
-var key = argv[2];
-var mode = argv[3];
 
-var numberOfGames = parseInt(argv[4], 10);
-var numberOfTurns = 300; // Ignored in arena mode
-
-if ('training' === mode) {
-  numberOfGames = 1;
-  numberOfTurns = parseInt(argv[4], 10);
-}
-
-var serverUrl = 'http://vindinium.org';
-if (6 === argv.length) {
-  serverUrl = argv[5];
-}
-
-var i = 0;
-
-function playGame() {
-  start(serverUrl, key, mode, numberOfTurns, randomBot, function() {
-    console.log('Game Finished:', i + 1, '/', numberOfGames);
-    i++;
-    if (i < numberOfGames) {
-      playGame();
-    }
-  });
-}
-
-playGame();
+module.exports = {
+    start: start,
+    cli: cli
+};

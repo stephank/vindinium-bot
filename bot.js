@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 module.exports = function(curState, cb) {
   var dirs = ['Stay', 'North', 'South', 'East', 'West'];
   cb(choose(dirs));
@@ -5,4 +7,8 @@ module.exports = function(curState, cb) {
 
 function choose(dirs) {
   return dirs[Math.floor(Math.random() * dirs.length)];
+}
+
+if (require.main === module) {
+    require('./client').cli(module.exports);
 }
