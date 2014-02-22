@@ -36,15 +36,15 @@ BoardProto.get = function(x, y) {
 };
 
 BoardProto.findOne = function(t) {
-    return this.tiles.find(function(c) {
-        return c.chr === t;
+    return this.tiles.find(function(tile) {
+        return tile.chr === t;
     });
 };
 
 BoardProto.findAll = function(t) {
-    return this.tiles.filter(function(c) {
-        if (c.chr[0] === t[0])
-            return t[1] && c.chr[1] === t[1];
+    return this.tiles.filter(function(tile) {
+        if (tile.chr[0] === t[0])
+            return !t[1] || tile.chr[1] === t[1];
     });
 };
 
