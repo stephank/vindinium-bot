@@ -5,12 +5,20 @@ var Board = function(data) {
     var numTiles = this.numTiles = size * size;
     var tiles = this.tiles = new Array(numTiles);
 
+    var mines = this.mines = [];
+    var taverns = this.taverns = [];
+
     var x = 0, y = 0;
     var str = this.str = data.tiles;
     for (var idx = 0; idx < numTiles; idx++) {
         var strIdx = idx * 2;
         var chr = str.slice(strIdx, strIdx + 2);
-        tiles[idx] = new Tile(this, idx, x, y, chr);
+        var tile = tiles[idx] = new Tile(this, idx, x, y, chr);
+
+        if (chr[0] === '$')
+            mines.push(tile);
+        else if (chr === '[]')
+            taverns.push(tile);
 
         if (++y >= size) {
             y = 0;
