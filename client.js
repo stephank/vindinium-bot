@@ -79,8 +79,9 @@ function cli(bot, log) {
         };
     }
 
-    var mode, numGames, cfgFile;
+    var mode, numGames, numChildren, cfgFile, config, gameNo;
     var argv = require('optimist').argv;
+    var cluster = require('cluster');
 
     if (argv._.length !== 1) usage();
     if (Boolean(argv.a) === Boolean(argv.t)) usage();
@@ -95,23 +96,42 @@ function cli(bot, log) {
         numGames = argv.t;
     }
 
-    var config;
-    fs.readFile(cfgFile, 'utf8', function(err, data) {
-        if (err) fatal('Failed to open config', err);
+    var match = /^(\d+)x(\d+)$/.exec(numGames);
+    if (match) {
+        numChildren = parseInt(match[1], 10);
+        numGames = parseInt(match[2], 10);
+    }
+    else {
+        numChildren = 1;
+        if (!numGames || typeof(numGames) !== 'number') usage();
+    }
 
-        try { config = JSON.parse(data); }
-        catch (e) { fatal('Failed to parse config', e); }
+    gameNo = 0;
 
-        config.bot = bot;
-        config.mode = mode;
-        config.log = log;
-        playGame();
-    });
+    if (numChildren > 1 && cluster.isMaster) {
+        for (i = 0; i < numChildren; i++)
+            cluster.fork();
+    }
+    else {
+        fs.readFile(cfgFile, 'utf8', function(err, data) {
+            if (err) fatal('Failed to open config', err);
 
-    var i = 0;
+            try { config = JSON.parse(data); }
+            catch (e) { fatal('Failed to parse config', e); }
+
+            config.bot = bot;
+            config.mode = mode;
+            config.log = log;
+            playGame();
+        });
+    }
+
     function playGame() {
         start(config, function(err, state) {
-            if (++i < numGames) playGame();
+            if (++gameNo < numGames)
+                playGame();
+            else if (cluster.worker)
+                cluster.worker.disconnect();
         });
     }
 
