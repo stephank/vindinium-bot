@@ -40,8 +40,18 @@ function augment(s) {
     var board = s.game.board = new Board(s.game.board);
 
     s.game.heroes.concat([s.hero]).forEach(function(hero) {
+        var idStr = String(hero.id);
+        hero.idStr = idStr;
+
         var pos = hero.pos;
         hero.tile = board.get(pos.x, pos.y);
+
+        var spawnPos = hero.spawnPos;
+        hero.spawnTile = board.get(spawnPos.x, spawnPos.y);
+
+        hero.mines = board.mines.filter(function(tile) {
+            return tile.chr[1] === hero.idStr;
+        });
     });
 }
 
