@@ -5,7 +5,15 @@ var Board = require('./board');
 var pathing = require('./pathing');
 
 // Decide on next turn.
-module.exports = function(s, cb) {
+module.exports = function entry(s, cb) {
+    var start = Date.now();
+    run(s, function(dir) {
+        s.context.ms = Date.now() - start;
+        cb(dir);
+    });
+};
+
+function run(s, cb) {
     augment(s);
 
     var hero = s.hero;
@@ -67,7 +75,7 @@ module.exports = function(s, cb) {
     else {
         cb(null);
     }
-};
+}
 
 // Do a bunch of augmentations on game state.
 function augment(s) {
@@ -142,7 +150,9 @@ if (require.main === module) {
                 str += printf('Goal: %4s, (%2d,%2d) %4d #',
                     goal.action, goal.tile.x, goal.tile.y, goal.score);
             else
-                str += 'Goal: idle';
+                str += 'Goal: idle                ';
+
+            str += printf(' - %4d ms', s.context.ms);
         }
 
         console.log(str);
