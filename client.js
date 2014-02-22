@@ -49,6 +49,20 @@ function start(config, cb) {
 
         var url = state.playUrl;
         bot(state, function(dir) {
+            if (!dir) dir = '';
+            switch (dir.toLowerCase()) {
+                case 'n': case 'north':
+                    dir = 'North'; break;
+                case 'e': case 'east':
+                    dir = 'East'; break;
+                case 's': case 'south':
+                    dir = 'South'; break;
+                case 'w': case 'west':
+                    dir = 'West'; break;
+                default:
+                    dir = 'Stay'; break;
+            }
+
             gameRequest(state.playUrl, {
                 key: key,
                 dir: dir
