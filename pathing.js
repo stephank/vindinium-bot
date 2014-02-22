@@ -1,6 +1,8 @@
 var DIRS = ['n', 'e', 's', 'w'];
-module.exports = function(s, a, b) {
+module.exports = function(s, a, b, fn) {
     var tiles, open, i, len, best, tile, dir;
+
+    if (!fn) fn = defaultHeuristic;
 
     tiles = s.game.board.tiles;
     len = tiles.length;
@@ -9,7 +11,7 @@ module.exports = function(s, a, b) {
 
     open = [a];
     a._g = 0;
-    a._f = a.dist(b);
+    a._f = fn(s, a, b);
 
     while ((len = open.length)) {
         best = null;
@@ -40,7 +42,7 @@ module.exports = function(s, a, b) {
             tile._prev = best;
             tile._dir = dir;
             tile._g = g;
-            tile._f = g + tile.dist(b);
+            tile._f = g + fn(s, tile, b);
         }
     }
 
@@ -54,3 +56,7 @@ module.exports = function(s, a, b) {
         return path;
     }
 };
+
+function defaultHeuristic(s, tile, goal) {
+    return tile.dist(goal);
+}
