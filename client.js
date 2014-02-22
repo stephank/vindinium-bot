@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 var request = require('request');
-var qs = require('qs');
 
 var randomBot = require('./bot');
 
@@ -34,7 +33,7 @@ function getNewGameState(serverUrl, key, mode, numTurns, cb) {
   }
   request.post({
     url: serverUrl + apiEndpoint,
-    body: qs.stringify(params),
+    form: params,
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded'
     }
@@ -76,10 +75,10 @@ function isFinished(state) {
 function move(url, key, direction, cb) {
   request.post({
     url: url,
-    body: qs.stringify({
+    form: {
       key: key,
       dir: direction
-    }),
+    },
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded'
     }
