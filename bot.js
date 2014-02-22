@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-var util = require('util');
+var printf = require('printf');
 var Board = require('./board');
 var pathing = require('./pathing');
 
@@ -104,19 +104,51 @@ if (require.main === module) {
         var turn = Math.floor(s.game.turn / 4);
         var goal = s.context.goal;
         var hero = s.hero;
+        var str;
 
-        str = util.format('T=%s - ', turn);
         if (turn === 0) {
-            str += util.format('Game started: %s', s.viewUrl);
+            str = printf("### Game started - URL: %s", s.viewUrl);
         }
+
+        else if (s.game.finished) {
+            var topScore = -1;
+            var topRankers = 0;
+
+            var ranking = s.game.heroes.map(function(douche) {
+                if (douche.gold > topScore) {
+                    topScore = douche.gold;
+                    topRankers = 1;
+                }
+                else if (douche.gold === topScore) {
+                    topRankers++;
+                }
+
+                return printf("P%d %s: %d ◯",
+                    douche.id, douche.name, douche.gold);
+            }).join(', ');
+
+            if (hero.gold === topScore) {
+                if (topRankers > 1)
+                    str = 'DRAW';
+                else
+                    str = 'WIN';
+            }
+            else {
+                str = 'LOSS';
+            }
+
+            str = printf("### Game ended - %s - %s", str, ranking);
+        }
+
         else {
-            str += util.format('Hero: ♡ %s, ◯ %s, (%s,%s) - ',
-                hero.life, hero.gold, hero.pos.x, hero.pos.y);
+            str = printf('T=%4d - Hero: %3d ♡, %4d ◯, (%2d,%2d) - ',
+                turn, hero.life, hero.gold, hero.pos.x, hero.pos.y);
+
             if (goal)
-                str += util.format('Goal: %s, (%s,%s) # %s',
+                str += printf('Goal: %4s, (%2d,%2d) %4d #',
                     goal.what, goal.where.x, goal.where.y, goal.score);
             else
-                trs += 'Goal: idle';
+                str += 'Goal: idle';
         }
 
         console.log(str);
