@@ -89,43 +89,17 @@ TileProto.dist = function(other) {
 };
 
 var DIRS = ['n', 'e', 's', 'w'];
-TileProto.neighbours = function(maxDepth) {
+TileProto.neighbours = function() {
     var self = this;
-    if (!maxDepth) maxDepth = 1;
-
-    var indices = {};
-    walk(this, 1);
-    function walk(tile, depth) {
-        for (var i = 0; i < 4; i++) {
-            var dir = DIRS[i];
-
-            var neighbour = tile[dir]();
-            if (neighbour && neighbour !== self) {
-                var idx = neighbour.idx;
-                if (!indices[idx]) {
-                    indices[idx] = true;
-
-                    if (depth === 1)
-                        neighbour._dir = dir;
-
-                    if (depth !== maxDepth)
-                        walk(neighbour, depth + 1);
-                }
-            }
-        }
-    }
-
-    var tiles = this.board.tiles;
-    var res = [];
-    for (var idx in indices) {
-        var tile = tiles[idx];
-        res.push({ tile: tile, dir: tile._dir });
-    }
-    return res;
+    return DIRS.map(function(dir) {
+        return { dir: dir, tile: self[dir]() };
+    }).filter(function(neighbour) {
+        return neighbour.tile;
+    });
 };
 
-TileProto.isNear = function(t, maxDepth) {
-    return this.neighbours(maxDepth).some(function(neighbour) {
+TileProto.isNear = function(t) {
+    return this.neighbours().some(function(neighbour) {
         var tile = neighbour.tile;
         if (tile.chr[0] === t[0])
             return !t[1] || tile.chr[1] === t[1];
