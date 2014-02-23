@@ -36,6 +36,7 @@ function start(config, cb) {
         if (config.map) params.map = config.map;
     }
     gameRequest(serverUrl + '/api/' + mode, params, function(err, state) {
+        if (process.send) process.send({ type: 'dequeue' });
         if (err) cb(err); else loop(state);
     });
 
@@ -80,7 +81,8 @@ function cli(bot, log) {
         };
     }
 
-    var mode, numGames, numChildren, numTurns, mapName, cfgFile, config;
+    var mode, numGames, numChildren, numQueue;
+    var numTurns, mapName, cfgFile;
     var argv = require('optimist').argv;
     var cluster = require('cluster');
 
@@ -99,41 +101,81 @@ function cli(bot, log) {
         mapName = argv.map;
     }
 
-    var match = /^(\d+)x(.+)$/.exec(numGames);
-    if (match) {
-        numChildren = parseInt(match[1], 10);
-        numGames = match[2];
-    }
-    else {
-        numChildren = 1;
-    }
-
-    if (numGames === 'INF')
-        numGames = Infinity;
-    else
-        numGames = parseInt(numGames, 10);
-    if (!numGames || numGames < 1)
-        usage();
-
     var abortOnInterrupt = (mode === 'training');
     var gameNo = 0;
 
-    if (numChildren > 1 && cluster.isMaster) {
-        for (i = 0; i < numChildren; i++)
-            cluster.fork();
+    if (numGames === 'INF')
+        numGames = Infinity;
+
+    if (typeof(numGames) === 'string') {
+        var parts = numGames.split(',', 3);
+        if (parts.length === 2) {
+            numChildren = parseInt(parts[0], 10);
+            numGames = parts[1];
+            numQueue = numChildren;
+        }
+        else {
+            numQueue = parseInt(parts[0], 10);
+            numChildren = parseInt(parts[1], 10);
+            numGames = parts[2];
+        }
+
+        if (numGames === 'INF')
+            numGames = Infinity;
+        else
+            numGames = parseInt(numGames, 10);
+    }
+    else {
+        numChildren = 1;
+        numQueue = numChildren;
+    }
+
+    if (!numGames || numGames < 1) usage();
+    if (!numChildren || numChildren < 1) usage();
+    if (!numQueue || numQueue < 1 || numQueue > numChildren) usage();
+
+    if (cluster.isWorker) {
+        readConfig(function(config) {
+            start(config, function(err, state) {
+                if (err) fatal('Request error', err);
+                cluster.worker.disconnect();
+            });
+        });
 
         process.on('SIGINT', function() {
-            if (!abortOnInterrupt) {
-                abortOnInterrupt = true;
-                warnGraceful();
-            }
+            if (abortOnInterrupt) process.exit(1);
+
+            abortOnInterrupt = true;
+        });
+    }
+    else if (numChildren === 1) {
+        readConfig(singleProcessLoop);
+
+        process.on('SIGINT', function() {
+            if (abortOnInterrupt) process.exit(1);
+
+            abortOnInterrupt = true;
+            numGames = 0;
+            warnGraceful();
         });
     }
     else {
-        fs.readFile(cfgFile, 'utf8', function(err, data) {
+        readConfig(masterLoop);
+
+        process.on('SIGINT', function() {
+            if (abortOnInterrupt) return;
+
+            abortOnInterrupt = true;
+            numGames = 0;
+            warnGraceful();
+        });
+    }
+
+    function readConfig(cb) {
+        fs.readFile(cfgFile, 'utf8', function(err, config) {
             if (err) fatal('Failed to open config', err);
 
-            try { config = JSON.parse(data); }
+            try { config = JSON.parse(config); }
             catch (e) { fatal('Failed to parse config', e); }
 
             config.bot = bot;
@@ -143,27 +185,41 @@ function cli(bot, log) {
                 config.turns = numTurns;
                 config.map = mapName;
             }
-            playGame();
-        });
 
-        process.on('SIGINT', function() {
-            if (abortOnInterrupt)
-                process.exit(1);
-
-            abortOnInterrupt = true;
-            numGames = 0;
-            if (!cluster.worker) warnGraceful();
+            cb(config);
         });
     }
 
-    function playGame() {
+    function masterLoop(config) {
+        while (numGames && numChildren && numQueue) {
+            var worker = cluster.fork();
+            worker.on('exit', onExit);
+            worker.on('message', onMessage);
+
+            numGames--;
+            numChildren--;
+            numQueue--;
+        }
+
+        function onExit() {
+            numChildren++;
+            masterLoop(config);
+        }
+
+        function onMessage(msg) {
+            if (msg.type === 'dequeue') {
+                numQueue++;
+                masterLoop(config);
+            }
+        }
+    }
+
+    function singleProcessLoop(config) {
         start(config, function(err, state) {
             if (err)
                 fatal('Request error', err);
-            if (++gameNo < numGames)
-                playGame();
-            else if (cluster.worker)
-                cluster.worker.disconnect();
+            if (--numGames)
+                singleProcessLoop(config);
         });
     }
 
