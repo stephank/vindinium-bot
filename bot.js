@@ -80,7 +80,7 @@ function tileDanger(s, tile) {
     var res = 0;
     if (!tile.isNear('[]')) {
         var hero = s.hero;
-        s.game.heroes.forEach(function(douche) {
+        s.game.heroes.some(function(douche) {
             if (douche === s.hero) return;
 
             var path = pathing(s, douche.tile, tile, null, 3);
@@ -93,8 +93,11 @@ function tileDanger(s, tile) {
 
                 // Never fight an enemy next to a tavern.
                 else if (dist === 1 && douche.tile.isNear('[]'))
-                    res = Math.max(res, 5);
+                    res = 5;
             }
+
+            // Short-circuit on maximum threat.
+            return res === 5;
         });
     }
     return res;
