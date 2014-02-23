@@ -27,7 +27,7 @@ function run(s, cb) {
 
     // How badly we want to heal, or dodge towards a tavern.
     var shouldHeal = hero.life <= 80 && (hero.gold >= 2 || hero.mineCount) ||
-        (hero.mineCount && tileDanger(s, hero.tile));
+        (hero.mineCount && tileDanger(s, hero.tile, 0));
     if (shouldHeal) {
         board.taverns.forEach(function(tile) {
             var path = pathing(s, s.hero.tile, tile, tileCost);
@@ -80,7 +80,7 @@ function run(s, cb) {
 }
 
 // Check for a nearby danger from enemies.
-function tileDanger(s, tile) {
+function tileDanger(s, tile, lifePenalty) {
     var res = 0;
     if (!tile.isNear('[]')) {
         var hero = s.hero;
@@ -92,7 +92,7 @@ function tileDanger(s, tile) {
                 var dist = path.length;
 
                 // Keep a safe distance from healthier douches.
-                var heroLife = hero.life;
+                var heroLife = hero.life - lifePenalty;
                 if (path.length % 2 === 1) heroLife -= 20;
                 if (dist < 4 && douche.life > heroLife)
                     res = Math.max(res, 4 - dist);
@@ -113,7 +113,8 @@ function tileDanger(s, tile) {
 // Avoid dangerous tiles, and get the closest to the goal.
 function tileCost(s, tile, goal, from) {
     var nextTile = (tile.chr === '  ') ? tile : from;
-    return tile.dist(goal) + tileDanger(s, nextTile) * 1000;
+    var lifePenalty = (tile.chr[0] === '$') ? 20 : 0;
+    return tile.dist(goal) + tileDanger(s, nextTile, lifePenalty) * 1000;
 }
 
 // Do a bunch of augmentations on game state.
