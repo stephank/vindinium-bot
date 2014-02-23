@@ -92,7 +92,9 @@ function tileDanger(s, tile) {
                 var dist = path.length;
 
                 // Keep a safe distance from healthier douches.
-                if (dist < 4 && douche.life > hero.life)
+                var heroLife = hero.life;
+                if (path.length % 2 === 0) heroLife -= 20;
+                if (dist < 4 && douche.life > heroLife)
                     res = Math.max(res, 4 - dist);
 
                 // Never fight an enemy next to a tavern.
