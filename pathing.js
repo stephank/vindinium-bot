@@ -12,7 +12,7 @@ function run(s, a, b, fn, maxLength) {
 
     open = [a];
     map = Object.create(null);
-    map[a.idx] = new TileEx('open', 0, fn(s, a, b));
+    map[a.idx] = new TileEx('open', 0, fn(s, a, b, a));
 
     while ((len = open.length)) {
         best = bestEx = null;
@@ -55,7 +55,7 @@ function run(s, a, b, fn, maxLength) {
             tileEx.prev = best;
             tileEx.dir = neighbour.dir;
             tileEx.g = g;
-            tileEx.f = g + fn(s, tile, b);
+            tileEx.f = g + fn(s, tile, b, best);
         }
     }
 
@@ -89,6 +89,7 @@ function TileEx(open, g, f) {
     this.dir = '';
 }
 
-function defaultHeuristic(s, a, b) {
-    return a.dist(b);
+// Default heuristic is to simply get closest to the goal.
+function defaultHeuristic(s, tile, goal, from) {
+    return tile.dist(goal);
 }

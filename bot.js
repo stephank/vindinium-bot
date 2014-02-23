@@ -111,8 +111,9 @@ function tileDanger(s, tile) {
 
 // Heuristic cost calculation during pathing.
 // Avoid dangerous tiles, and get the closest to the goal.
-function tileCost(s, a, b) {
-    return a.dist(b) + tileDanger(s, a) * 1000;
+function tileCost(s, tile, goal, from) {
+    var nextTile = (tile.chr === '  ') ? tile : from;
+    return tile.dist(goal) + tileDanger(s, nextTile) * 1000;
 }
 
 // Do a bunch of augmentations on game state.
