@@ -150,41 +150,38 @@ if (require.main === module) {
         var str;
 
         if (turn === 0) {
-            str = printf("### Game started - URL: %s", s.viewUrl);
+            str = printf('### Game started - URL: %s', s.viewUrl);
         }
 
         else if (s.game.finished) {
             var topScore = -1;
             var topRankers = 0;
 
-            var ranking = s.game.heroes.map(function(douche) {
-                if (douche.gold > topScore) {
-                    topScore = douche.gold;
-                    topRankers = 1;
-                }
-                else if (douche.gold === topScore) {
-                    topRankers++;
-                }
+            str = '### Game ended - ';
 
-                return printf("P%d %s: %d ◯",
-                    douche.id, douche.name, douche.gold);
-            }).join(', ');
+            var ranking = s.game.heroes.slice();
+            ranking.sort(function(a, b) {
+                return b.gold - a.gold;
+            });
 
-            if (hero.gold === topScore) {
-                if (topRankers > 1)
-                    str = 'DRAW';
+            if (s.hero.gold === ranking[0].gold) {
+                if (ranking[0].gold === ranking[1].gold)
+                    str += 'DRAW';
                 else
-                    str = 'WIN';
+                    str += 'WIN';
             }
             else {
-                str = 'LOSS';
+                str += 'LOSS';
             }
 
-            str = printf("### Game ended - %s - %s", str, ranking);
+            str += ' - ' + ranking.map(function(douche) {
+                return printf('P%d %s: %d ◯',
+                    douche.id, douche.name, douche.gold);
+            }).join(', ');
         }
 
         else {
-            str = printf('T=%4d - Hero: %3d ♡, %4d ◯, (%2d,%2d) - ',
+            str = printf('T=%3d - Hero: %3d ♡, %4d ◯, (%2d,%2d) - ',
                 turn, hero.life, hero.gold, hero.pos.x, hero.pos.y);
 
             if (goal)
