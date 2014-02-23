@@ -1,57 +1,71 @@
-module.exports = function(s, a, b, fn) {
-    var tiles, open, i, len, best, tile, neighbours;
+module.exports = function(s, a, b, fn, maxLength) {
+    var open, map, i, len, best, bestEx, tile, tileEx;
+    var neighbours, neighbour, g;
 
     if (a === b) return [];
     if (!fn) fn = defaultHeuristic;
-
-    tiles = s.game.board.tiles;
-    len = tiles.length;
-    for (i = 0; i < len; i++)
-        tiles[i]._closed = false;
+    if (!maxLength) maxLength = Infinity;
 
     open = [a];
-    a._g = 0;
-    a._f = fn(s, a, b);
+    map = Object.create(null);
+    map[a.idx] = { g: 0, f: fn(s, a, b) };
 
     while ((len = open.length)) {
-        best = null;
+        best = bestEx = null;
         for (i = 0; i < len; i++) {
             tile = open[i];
-            if (!best || tile._f < best._f) best = tile;
+            tileEx = map[tile.idx];
+            if (!best || tileEx.f < bestEx.f) {
+                best = tile;
+                bestEx = tileEx;
+            }
         }
 
         if (best === b)
             return reconstruct();
 
-        best._closed = true;
+        bestEx.closed = true;
         open.splice(open.indexOf(best), 1);
+
+        if (bestEx.g === maxLength) continue;
 
         neighbours = best.neighbours();
         len = neighbours.length;
         for (i = 0; i < len; i++) {
-            tile = neighbours[i];
-            if (tile._closed || !(tile === b || tile.chr === '  '))
-                continue;
+            neighbour = neighbours[i];
 
-            g = best._g + 1;
+            tile = neighbour.tile;
+            if (tile !== b && tile.chr !== '  ') continue;
+
+            tileEx = map[tile.idx];
+            if (!tileEx) tileEx = map[tile.idx] = {};
+            else if (tileEx.closed) continue;
+
+            g = bestEx.g + 1;
             if (open.indexOf(tile) === -1)
                 open.push(tile);
-            else if (g >= tile._g)
+            else if (g >= tileEx.g)
                 continue;
 
-            tile._prev = best;
-            tile._dir = tile.dir;
-            tile._g = g;
-            tile._f = g + fn(s, tile, b);
+            tileEx.prev = best;
+            tileEx.dir = neighbour.dir;
+            tileEx.g = g;
+            tileEx.f = g + fn(s, tile, b);
         }
     }
 
     function reconstruct() {
         var path = [];
-        tile = b;
-        while ((dir = tile._dir)) {
+        var tile = b;
+        while (true) {
+            var tileEx = map[tile.idx];
+
+            var dir = tileEx.dir;
+            if (!dir) break;
+
             path.unshift(dir);
-            tile = tile._prev;
+
+            tile = tileEx.prev;
         }
         return path;
     }

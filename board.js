@@ -106,7 +106,7 @@ TileProto.neighbours = function(maxDepth) {
                     indices[idx] = true;
 
                     if (depth === 1)
-                        neighbour.dir = dir;
+                        neighbour._dir = dir;
 
                     if (depth !== maxDepth)
                         walk(neighbour, depth + 1);
@@ -117,13 +117,16 @@ TileProto.neighbours = function(maxDepth) {
 
     var tiles = this.board.tiles;
     var res = [];
-    for (var idx in indices)
-        res.push(tiles[idx]);
+    for (var idx in indices) {
+        var tile = tiles[idx];
+        res.push({ tile: tile, dir: tile._dir });
+    }
     return res;
 };
 
 TileProto.isNear = function(t, maxDepth) {
-    return this.neighbours(maxDepth).some(function(tile) {
+    return this.neighbours(maxDepth).some(function(neighbour) {
+        var tile = neighbour.tile;
         if (tile.chr[0] === t[0])
             return !t[1] || tile.chr[1] === t[1];
     });

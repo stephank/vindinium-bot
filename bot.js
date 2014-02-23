@@ -29,11 +29,13 @@ function run(s, cb) {
     if (hero.mineCount) {
         var danger = tileDanger(s, hero.tile);
         if (danger) {
-            hero.tile.neighbours().forEach(function(tile) {
+            hero.tile.neighbours().forEach(function(neighbour) {
+                var tile = neighbour.tile;
                 if (tile.chr !== '  ') return;
+
                 var danger = tileDanger(s, tile);
                 if (danger)
-                    goal('dodge', tile, [tile.dir], 105 - danger);
+                    goal('dodge', tile, [neighbour.dir], 105 - danger);
             });
         }
     }
@@ -93,15 +95,19 @@ function tileDanger(s, tile) {
         var hero = s.hero;
         s.game.heroes.forEach(function(douche) {
             if (douche === s.hero) return;
-            var dist = douche.tile.dist(tile);
 
-            // Keep a safe distance from healthier douches.
-            if (dist < 4 && douche.life > hero.life)
-                res = 4 - dist;
+            var path = pathing(s, douche.tile, tile, null, 3);
+            if (path) {
+                var dist = path.length;
 
-            // Never fight an enemy next to a tavern.
-            else if (dist === 1 && douche.tile.isNear('[]'))
-                res = 5;
+                // Keep a safe distance from healthier douches.
+                if (dist < 4 && douche.life > hero.life)
+                    res = 4 - dist;
+
+                // Never fight an enemy next to a tavern.
+                else if (dist === 1 && douche.tile.isNear('[]'))
+                    res = 5;
+            }
         });
     }
     return res;
