@@ -30,8 +30,8 @@ var BoardProto = Board.prototype;
 
 BoardProto.get = function(x, y) {
     var size = this.size;
-    if (x < 0 || x >= size) return;
-    if (y < 0 || y >= size) return;
+    if (x < 0 || x >= size) return null;
+    if (y < 0 || y >= size) return null;
     return this.tiles[x * size + y];
 };
 

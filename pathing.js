@@ -1,14 +1,18 @@
-module.exports = function(s, a, b, fn, maxLength) {
+module.exports = function (s, a, b, fn, maxLength) {
+    if (!fn) fn = defaultHeuristic;
+    if (!maxLength) maxLength = Infinity;
+    return run(s, a, b, fn, maxLength);
+};
+
+function run(s, a, b, fn, maxLength) {
     var open, map, i, len, best, bestEx, tile, tileEx;
     var neighbours, neighbour, g;
 
     if (a === b) return [];
-    if (!fn) fn = defaultHeuristic;
-    if (!maxLength) maxLength = Infinity;
 
     open = [a];
     map = Object.create(null);
-    map[a.idx] = { open: true, g: 0, f: fn(s, a, b) };
+    map[a.idx] = new TileEx('open', 0, fn(s, a, b));
 
     while ((len = open.length)) {
         best = bestEx = null;
@@ -25,10 +29,11 @@ module.exports = function(s, a, b, fn, maxLength) {
         if (best === b)
             return reconstruct();
 
-        bestEx.open = false;
+        bestEx.mark = 'closed';
         open.splice(bestEx.i, 1);
 
         if (bestEx.g === maxLength) continue;
+        g = bestEx.g + 1;
 
         neighbours = best.neighbours();
         len = neighbours.length;
@@ -39,15 +44,11 @@ module.exports = function(s, a, b, fn, maxLength) {
             if (!tile || (tile !== b && tile.chr !== '  ')) continue;
 
             tileEx = map[tile.idx];
-            if (!tileEx) tileEx = map[tile.idx] = {};
-            else if (tileEx.open === false) continue;
-
-            g = bestEx.g + 1;
-            if (!tileEx.open) {
-                tileEx.open = true;
+            if (!tileEx) {
+                tileEx = map[tile.idx] = new TileEx('new', 0, 0);
                 open.push(tile);
             }
-            else if (g >= tileEx.g) {
+            else if (tileEx.mark === 'closed' || g >= tileEx.g) {
                 continue;
             }
 
@@ -58,6 +59,8 @@ module.exports = function(s, a, b, fn, maxLength) {
         }
     }
 
+    return null;
+
     function reconstruct() {
         var path = [];
         var tile = b;
@@ -66,14 +69,25 @@ module.exports = function(s, a, b, fn, maxLength) {
 
             var dir = tileEx.dir;
             if (!dir) break;
-
             path.unshift(dir);
 
             tile = tileEx.prev;
         }
         return path;
     }
-};
+}
+
+// We use a class for this, and keep all properties
+// of the same type, to optimize for V8.
+function TileEx(open, g, f) {
+    this.open = open;
+    this.g = g;
+    this.f = f;
+
+    this.i = 0;
+    this.prev = null;
+    this.dir = '';
+}
 
 function defaultHeuristic(s, a, b) {
     return a.dist(b);
