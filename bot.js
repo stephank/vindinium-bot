@@ -81,31 +81,32 @@ function run(s, cb) {
 
 // Check for a nearby danger from enemies.
 function tileDanger(s, tile, lifePenalty) {
+    var hero = s.hero;
+    var heroLife = hero.life - lifePenalty - tile.isNear('@') * 20;
+    if (tile.isNear('[]')) heroLife += 20;
+
     var res = 0;
-    if (!tile.isNear('[]')) {
-        var hero = s.hero;
-        s.game.heroes.some(function(douche) {
-            if (douche === s.hero) return;
+    s.game.heroes.forEach(function(douche) {
+        if (douche === s.hero) return;
 
-            var path = pathing(s, douche.tile, tile, null, 3);
-            if (path) {
-                var dist = path.length;
+        // Find douches that have potential to hunt us.
+        var path = pathing(s, douche.tile, tile, null, 3);
+        if (path) {
+            var dist = path.length;
 
-                // Keep a safe distance from healthier douches.
-                var heroLife = hero.life - lifePenalty;
-                if (path.length % 2 === 1) heroLife -= 20;
-                if (dist < 4 && douche.life > heroLife)
-                    res = Math.max(res, 4 - dist);
-
-                // Never fight an enemy next to a tavern.
-                else if (dist === 1 && douche.tile.isNear('[]'))
-                    res = 5;
+            // Never fight an enemy next to a tavern.
+            if (dist === 1 && douche.tile.isNear('[]')) {
+                res += 5;
             }
-
-            // Short-circuit on maximum threat.
-            return res === 5;
-        });
-    }
+            // Keep a safe distance from healthier douches.
+            else if (dist < 4) {
+                var safeLife = heroLife;
+                if (path.length % 2 === 1) safeLife -= 20;
+                if (douche.life > safeLife)
+                    res += Math.max(res, 4 - dist);
+            }
+        }
+    });
     return res;
 }
 
@@ -114,7 +115,7 @@ function tileDanger(s, tile, lifePenalty) {
 function tileCost(s, tile, goal, from) {
     var nextTile = (tile.chr === '  ') ? tile : from;
     var lifePenalty = (tile.chr[0] === '$') ? 20 : 0;
-    return tile.dist(goal) + tileDanger(s, nextTile, lifePenalty) * 1000;
+    return tile.dist(goal) + tileDanger(s, nextTile, lifePenalty) * 50;
 }
 
 // Do a bunch of augmentations on game state.
