@@ -61,6 +61,10 @@ function run(s, cb) {
 
             var path = pathing(s, s.hero.tile, douche.tile, tileCost);
             if (path) {
+                // If the path length is even, consider the first hit.
+                if (path.length % 2 === 0 &&
+                    douche.life > hero.life - 20) return;
+
                 goal('kill', douche.tile, path,
                     Math.max(11 - path.length, 0) * 5);
             }
