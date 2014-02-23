@@ -24,11 +24,11 @@ function start(config, cb) {
     var serverUrl = config.serverUrl || 'http://vindinium.org';
 
     if (typeof(bot) !== 'function')
-        throw new Error("bot must be set");
+        throw new Error('bot must be set');
     if (typeof(key) !== 'string')
-        throw new Error("key must be set");
+        throw new Error('key must be set');
     if (mode !== 'arena' && mode !== 'training')
-        throw new Error("mode must be set to arena or training");
+        throw new Error('mode must be set to arena or training');
 
     var params = { key: key };
     if (mode === 'training') {
@@ -159,7 +159,7 @@ function cli(bot, log) {
     function playGame() {
         start(config, function(err, state) {
             if (err)
-                fatal("Request error", err);
+                fatal('Request error', err);
             if (++gameNo < numGames)
                 playGame();
             else if (cluster.worker)
