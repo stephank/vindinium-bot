@@ -8,7 +8,7 @@ module.exports = function(s, a, b, fn, maxLength) {
 
     open = [a];
     map = Object.create(null);
-    map[a.idx] = { g: 0, f: fn(s, a, b) };
+    map[a.idx] = { open: true, g: 0, f: fn(s, a, b) };
 
     while ((len = open.length)) {
         best = bestEx = null;
@@ -18,14 +18,15 @@ module.exports = function(s, a, b, fn, maxLength) {
             if (!best || tileEx.f < bestEx.f) {
                 best = tile;
                 bestEx = tileEx;
+                bestEx.i = i;
             }
         }
 
         if (best === b)
             return reconstruct();
 
-        bestEx.closed = true;
-        open.splice(open.indexOf(best), 1);
+        bestEx.open = false;
+        open.splice(bestEx.i, 1);
 
         if (bestEx.g === maxLength) continue;
 
@@ -39,13 +40,16 @@ module.exports = function(s, a, b, fn, maxLength) {
 
             tileEx = map[tile.idx];
             if (!tileEx) tileEx = map[tile.idx] = {};
-            else if (tileEx.closed) continue;
+            else if (tileEx.open === false) continue;
 
             g = bestEx.g + 1;
-            if (open.indexOf(tile) === -1)
+            if (!tileEx.open) {
+                tileEx.open = true;
                 open.push(tile);
-            else if (g >= tileEx.g)
+            }
+            else if (g >= tileEx.g) {
                 continue;
+            }
 
             tileEx.prev = best;
             tileEx.dir = neighbour.dir;
