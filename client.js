@@ -137,7 +137,7 @@ function cli(bot, log) {
     if (cluster.isWorker) {
         readConfig(function(config) {
             start(config, function(err, state) {
-                if (err) fatal('Request error', err);
+                if (err) console.error('Request error', err);
                 cluster.worker.disconnect();
             });
         });
@@ -216,10 +216,8 @@ function cli(bot, log) {
 
     function singleProcessLoop(config) {
         start(config, function(err, state) {
-            if (err)
-                fatal('Request error', err);
-            if (--numGames)
-                singleProcessLoop(config);
+            if (err) console.error('Request error', err);
+            if (--numGames) singleProcessLoop(config);
         });
     }
 
