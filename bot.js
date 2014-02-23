@@ -25,23 +25,10 @@ function run(s, cb) {
         best = { action: action, tile: tile, path: path, score: score };
     }
 
-    // Avoid deadly douches when there's mines at stake.
-    if (hero.mineCount) {
-        var danger = tileDanger(s, hero.tile);
-        if (danger) {
-            hero.tile.neighbours().forEach(function(neighbour) {
-                var tile = neighbour.tile;
-                if (tile.chr !== '  ') return;
-
-                var danger = tileDanger(s, tile);
-                if (danger)
-                    goal('dodge', tile, [neighbour.dir], 105 - danger);
-            });
-        }
-    }
-
-    // How badly we want to heal.
-    if (hero.life <= 80 && (hero.gold >= 2 || hero.mineCount)) {
+    // How badly we want to heal, or dodge towards a tavern.
+    var shouldHeal = hero.life <= 80 && (hero.gold >= 2 || hero.mineCount) ||
+        (hero.mineCount && tileDanger(s, hero.tile));
+    if (shouldHeal) {
         board.taverns.forEach(function(tile) {
             var path = pathing(s, s.hero.tile, tile, tileCost);
             if (path)
