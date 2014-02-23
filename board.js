@@ -88,20 +88,19 @@ TileProto.dist = function(other) {
     return Math.abs(other.x - this.x) + Math.abs(other.y - this.y);
 };
 
-var DIRS = ['n', 'e', 's', 'w'];
 TileProto.neighbours = function() {
-    var self = this;
-    return DIRS.map(function(dir) {
-        return { dir: dir, tile: self[dir]() };
-    }).filter(function(neighbour) {
-        return neighbour.tile;
-    });
+    return [
+        { dir: 'n', tile: this.n() },
+        { dir: 'e', tile: this.e() },
+        { dir: 's', tile: this.s() },
+        { dir: 'w', tile: this.w() }
+    ];
 };
 
 TileProto.isNear = function(t) {
     return this.neighbours().some(function(neighbour) {
         var tile = neighbour.tile;
-        if (tile.chr[0] === t[0])
+        if (tile && tile.chr[0] === t[0])
             return !t[1] || tile.chr[1] === t[1];
     });
 };

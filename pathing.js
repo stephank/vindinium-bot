@@ -35,7 +35,7 @@ module.exports = function(s, a, b, fn, maxLength) {
             neighbour = neighbours[i];
 
             tile = neighbour.tile;
-            if (tile !== b && tile.chr !== '  ') continue;
+            if (!tile || (tile !== b && tile.chr !== '  ')) continue;
 
             tileEx = map[tile.idx];
             if (!tileEx) tileEx = map[tile.idx] = {};
