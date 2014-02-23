@@ -102,11 +102,11 @@ function tileDanger(s, tile) {
 
                 // Keep a safe distance from healthier douches.
                 if (dist < 4 && douche.life > hero.life)
-                    res = 4 - dist;
+                    res = Math.max(res, 4 - dist);
 
                 // Never fight an enemy next to a tavern.
                 else if (dist === 1 && douche.tile.isNear('[]'))
-                    res = 5;
+                    res = Math.max(res, 5);
             }
         });
     }
