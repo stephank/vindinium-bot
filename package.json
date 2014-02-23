@@ -1,14 +1,14 @@
 {
     "name": "stephank-vindinium-bot",
     "authors": ["stephank", "ozten"],
-    "version": "0.0.0",
+    "version": "1.0.0",
     "license": "BSD",
     "keywords": ["vindinium"],
 
-    "main": "client.js",
+    "main": "bot.js",
+    "bin": "bot.js",
     "dependencies": {
-        "request": "2",
-        "optimist": "0.6",
+        "vindinium-client": "1",
         "printf": "0.1"
     },
 

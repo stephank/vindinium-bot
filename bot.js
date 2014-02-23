@@ -5,7 +5,7 @@ var Board = require('./board');
 var pathing = require('./pathing');
 
 // Decide on next turn.
-module.exports = function entry(s, cb) {
+module.exports = function bot(s, cb) {
     var start = Date.now();
     run(s, function(dir) {
         s.context.ms = Date.now() - start;
@@ -143,7 +143,7 @@ function augment(s) {
 
 // Run CLI if main.
 if (require.main === module) {
-    require('./client').cli(module.exports, function(s) {
+    require('vindinium-client').cli(module.exports, function(s) {
         var turn = Math.floor(s.game.turn / 4);
         var goal = s.context.goal;
         var hero = s.hero;
