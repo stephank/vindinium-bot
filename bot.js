@@ -26,14 +26,14 @@ function run(s, cb) {
     }
 
     // How badly we want to heal, or dodge towards a tavern.
-    var shouldHeal = hero.life <= 80 && (hero.gold >= 2 || hero.mineCount) ||
-        (hero.mineCount && tileDanger(s, hero.tile, 0));
-    if (shouldHeal) {
+    var shouldRun = hero.mineCount && tileDanger(s, hero.tile, 0);
+    var shouldHeal = hero.life <= 80 && (hero.gold >= 2 || hero.mineCount);
+    if (shouldRun || shouldHeal) {
         board.taverns.forEach(function(tile) {
             var path = pathing(s, s.hero.tile, tile, tileCost);
             if (path)
                 goal('heal', tile, path,
-                    80 - hero.life - path.length);
+                    (shouldRun ? 100 : 80 - hero.life) - path.length);
         });
     }
 
