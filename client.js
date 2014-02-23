@@ -82,6 +82,7 @@ function cli(bot, log) {
     var mode, numGames, numChildren, cfgFile, config, gameNo;
     var argv = require('optimist').argv;
     var cluster = require('cluster');
+    var seenSigint = false;
 
     if (argv._.length !== 1) usage();
     if (Boolean(argv.a) === Boolean(argv.t)) usage();
@@ -117,6 +118,13 @@ function cli(bot, log) {
     if (numChildren > 1 && cluster.isMaster) {
         for (i = 0; i < numChildren; i++)
             cluster.fork();
+
+        process.on('SIGINT', function() {
+            if (!seenSigint) {
+                seenSigint = true;
+                graceful();
+            }
+        });
     }
     else {
         fs.readFile(cfgFile, 'utf8', function(err, data) {
@@ -129,6 +137,15 @@ function cli(bot, log) {
             config.mode = mode;
             config.log = log;
             playGame();
+        });
+
+        process.on('SIGINT', function() {
+            if (seenSigint)
+                process.exit(1);
+
+            seenSigint = true;
+            numGames = 0;
+            if (!cluster.worker) graceful();
         });
     }
 
@@ -151,6 +168,10 @@ function cli(bot, log) {
     function fatal(pre, err) {
         console.error(pre + ': ' + err.message);
         process.exit(2);
+    }
+
+    function graceful() {
+        console.log('### SIGINT: Finishing matches. Press again to abort.');
     }
 }
 
