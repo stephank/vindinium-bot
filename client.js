@@ -30,9 +30,12 @@ function start(config, cb) {
     if (mode !== 'arena' && mode !== 'training')
         throw new Error("mode must be set to arena or training");
 
-    gameRequest(serverUrl + '/api/' + mode, {
-        key: key
-    }, function(err, state) {
+    var params = { key: key };
+    if (mode === 'training') {
+        if (config.turns) params.turns = config.turns;
+        if (config.map) params.map = config.map;
+    }
+    gameRequest(serverUrl + '/api/' + mode, params, function(err, state) {
         if (err) cb(err); else loop(state);
     });
 
@@ -58,10 +61,8 @@ function start(config, cb) {
                     dir = 'Stay'; break;
             }
 
-            gameRequest(state.playUrl, {
-                key: key,
-                dir: dir
-            }, function(err, state) {
+            var params = { key: key, dir: dir };
+            gameRequest(state.playUrl, params, function(err, state) {
                 if (err) cb(err); else loop(state);
             });
         });
@@ -79,7 +80,7 @@ function cli(bot, log) {
         };
     }
 
-    var mode, numGames, numChildren, cfgFile, config;
+    var mode, numGames, numChildren, numTurns, mapName, cfgFile, config;
     var argv = require('optimist').argv;
     var cluster = require('cluster');
 
@@ -94,6 +95,8 @@ function cli(bot, log) {
     else if (argv.t) {
         mode = 'training';
         numGames = argv.t;
+        numTurns = argv.turns;
+        mapName = argv.map;
     }
 
     var match = /^(\d+)x(.+)$/.exec(numGames);
@@ -136,6 +139,10 @@ function cli(bot, log) {
             config.bot = bot;
             config.mode = mode;
             config.log = log;
+            if (mode === 'training') {
+                config.turns = numTurns;
+                config.map = mapName;
+            }
             playGame();
         });
 
