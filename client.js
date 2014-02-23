@@ -217,7 +217,7 @@ function cli(bot, log) {
     function singleProcessLoop(config) {
         start(config, function(err, state) {
             if (err) console.error('Request error: %s', err.message);
-            if (--numGames) singleProcessLoop(config);
+            if (--numGames > 0) singleProcessLoop(config);
         });
     }
 
