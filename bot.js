@@ -57,12 +57,14 @@ function run(s, cb) {
             // Don't bother unless we have something to gain.
             if (douche.mineCount < 2) return;
             // If we'll lose, never mind.
-            if (douche.life > hero.life) return;
+            if (douche.life > 20 && douche.life > hero.life) return;
 
             var path = pathing(s, s.hero.tile, douche.tile, tileCost);
             if (path) {
+                var dist = path.length;
+
                 // If the path length is uneven, consider the first hit.
-                if (path.length % 2 === 1 &&
+                if (douche.life > 20 && dist > 2 && dist % 2 === 1 &&
                     douche.life > hero.life - 20) return;
 
                 goal('kill', douche.tile, path,
@@ -82,12 +84,13 @@ function run(s, cb) {
 // Check for a nearby danger from enemies.
 function tileDanger(s, tile, lifePenalty) {
     var hero = s.hero;
-    var heroLife = hero.life - lifePenalty - tile.isNear('@') * 20;
-    if (tile.isNear('[]')) heroLife += 20;
+    var heroLife = hero.life - lifePenalty;
+    if (tile.isNear('[]')) heroLife += 50;
 
     var res = 0;
     s.game.heroes.forEach(function(douche) {
         if (douche === s.hero) return;
+        if (douche.life <= 20) return;
 
         // Find douches that have potential to hunt us.
         var path = pathing(s, douche.tile, tile, null, 3);
@@ -99,9 +102,10 @@ function tileDanger(s, tile, lifePenalty) {
                 res += 5;
             }
             // Keep a safe distance from healthier douches.
-            else if (dist < 4) {
+            else {
                 var safeLife = heroLife;
-                if (path.length % 2 === 1) safeLife -= 20;
+                if (dist > 2 && dist % 2 === 1)
+                    safeLife -= 20;
                 if (douche.life > safeLife)
                     res += Math.max(res, 4 - dist);
             }
