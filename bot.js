@@ -64,7 +64,7 @@ function run(s, cb) {
                 var dist = path.length;
 
                 // If the path length is uneven, consider the first hit.
-                if (douche.life > 20 && dist > 2 && dist % 2 === 1 &&
+                if (douche.life > 20 && dist === 3 &&
                     douche.life > hero.life - 20) return;
 
                 goal('kill', douche.tile, path,
@@ -104,7 +104,7 @@ function tileDanger(s, tile, lifePenalty) {
             // Keep a safe distance from healthier douches.
             else {
                 var safeLife = heroLife;
-                if (dist > 2 && dist % 2 === 1)
+                if (dist === 3)
                     safeLife -= 20;
                 if (douche.life > safeLife)
                     res += Math.max(res, 4 - dist);
