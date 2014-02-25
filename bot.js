@@ -185,16 +185,16 @@ if (require.main === module) {
         }
 
         else {
-            str = printf('T=%3d - Hero: %3d ♡, %4d ◯, (%2d,%2d) - ',
+            str = printf('T=%3d   %3d ♡   %4d ◯   (%2d,%2d)   ',
                 turn, hero.life, hero.gold, hero.pos.x, hero.pos.y);
 
             if (goal)
-                str += printf('Goal: %5s, (%2d,%2d) %4d #',
+                str += printf('%5s   (%2d,%2d)   %4d #',
                     goal.action, goal.tile.x, goal.tile.y, goal.score);
             else
-                str += 'Goal: idle                 ';
+                str += ' idle                   ';
 
-            str += printf(' - %4d ms', s.context.ms);
+            str += printf('   %4d ms', s.context.ms);
         }
 
         console.log(str);
