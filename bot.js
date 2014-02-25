@@ -55,7 +55,7 @@ function run(s, cb) {
             // Let's not stab ourselves.
             if (douche === hero) return;
             // Don't bother unless we have something to gain.
-            if (douche.mineCount < 2) return;
+            if (douche.mineCount === 0) return;
             // If we'll lose, never mind.
             if (douche.life > 20 && douche.life > hero.life) return;
 
