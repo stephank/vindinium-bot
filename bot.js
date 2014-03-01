@@ -7,13 +7,12 @@ var pathing = require('./pathing');
 // Decide on next turn.
 module.exports = function bot(s, cb) {
     var start = Date.now();
-    run(s, function(dir) {
-        s.context.ms = Date.now() - start;
-        cb(dir);
-    });
+    var dir = run(s);
+    s.context.ms = Date.now() - start;
+    cb(null, dir);
 };
 
-function run(s, cb) {
+function run(s) {
     augment(s);
 
     var hero = s.hero;
@@ -75,10 +74,7 @@ function run(s, cb) {
 
     // Execute best goal.
     s.context.goal = best;
-    if (best)
-        cb(best.path[0]);
-    else
-        cb(null);
+    return best && best.path[0];
 }
 
 // Check for a nearby danger from enemies.
