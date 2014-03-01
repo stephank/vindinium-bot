@@ -143,56 +143,41 @@ function augment(s) {
 
 // Run CLI if main.
 if (require.main === module) {
-    require('vindinium-client').cli(module.exports, function(s) {
-        var turn = Math.floor(s.game.turn / 4);
-        var goal = s.context.goal;
-        var hero = s.hero;
-        var str;
+    var cli = require('vindinium-client').cli;
+    cli(module.exports, function(ev, arg) {
+        if (ev === 'turn') {
+            var turn = Math.floor(arg.game.turn / 4);
+            var goal = arg.context.goal;
+            var hero = arg.hero;
 
-        if (turn === 0) {
-            str = printf('### Game started - URL: %s', s.viewUrl);
-        }
-
-        else if (s.game.finished) {
-            var topScore = -1;
-            var topRankers = 0;
-
-            str = '### Game ended - ';
-
-            var ranking = s.game.heroes.slice();
-            ranking.sort(function(a, b) {
-                return b.gold - a.gold;
-            });
-
-            if (s.hero.gold === ranking[0].gold) {
-                if (ranking[0].gold === ranking[1].gold)
-                    str += 'DRAW';
-                else
-                    str += 'WIN';
-            }
-            else {
-                str += 'LOSS';
-            }
-
-            str += ' - ' + ranking.map(function(douche) {
-                return printf('P%d %s: %d ◯',
-                    douche.id, douche.name, douche.gold);
-            }).join(', ');
-        }
-
-        else {
-            str = printf('T=%3d   %3d ♡   %4d ◯   (%2d,%2d)   ',
+            var str = printf('T=%3d   %3d ♡   %4d ◯   (%2d,%2d)   ',
                 turn, hero.life, hero.gold, hero.pos.x, hero.pos.y);
-
             if (goal)
                 str += printf('%5s   (%2d,%2d)   %4d #',
                     goal.action, goal.tile.x, goal.tile.y, goal.score);
             else
                 str += ' idle                   ';
+            str += printf('   %4d ms', arg.context.ms);
 
-            str += printf('   %4d ms', s.context.ms);
+            console.log(str);
         }
-
-        console.log(str);
+        else if (ev === 'queue') {
+            console.log('### QUEUE - Waiting for players...');
+        }
+        else if (ev === 'start') {
+            console.log('### START - ' + arg.viewUrl);
+        }
+        else if (ev === 'end') {
+            console.log('### ' + cli.ranking(arg));
+        }
+        else if (ev === 'graceful') {
+            console.log('\r### SIGINT - Finishing running matches. Press again to abort.');
+        }
+        else if (ev === 'abort') {
+            console.log('\r### SIGINT - Matches aborted.');
+        }
+        else if (ev === 'error') {
+            console.error('### ERROR - ' + (arg.stack || arg.message || arg));
+        }
     });
 }
