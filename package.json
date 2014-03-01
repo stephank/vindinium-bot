@@ -8,7 +8,7 @@
     "main": "bot.js",
     "bin": "bot.js",
     "dependencies": {
-        "vindinium-client": "1",
+        "vindinium-client": "2",
         "printf": "0.1"
     },
 
